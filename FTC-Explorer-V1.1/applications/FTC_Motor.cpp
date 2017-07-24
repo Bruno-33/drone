@@ -9,6 +9,7 @@ FTC_Motor motor;
 
 void FTC_Motor::writeMotor(uint16_t throttle, int32_t pidTermRoll, int32_t pidTermPitch, int32_t pidTermYaw){
 	static int mode = 0;//0 遥控    1一键起飞    2 一键降落     3抛飞     4初始
+	uint16_t tmp_throttle;
 	if(rc.mymode==Normal){
 			if(imu.Acc.z > 2*ACC_1G && ftc.f.ARMED  && mode==4){
 				  mode=3;
@@ -25,16 +26,31 @@ void FTC_Motor::writeMotor(uint16_t throttle, int32_t pidTermRoll, int32_t pidTe
 					mode=0; 
 			}
 	}
-	else if(rc.mymode==Button_Land){
+	else if(rc.mymode==Button_Land && mode == 4){
 			mode=2;
+		  tmp_throttle = throttle;
 	}
-	else{
+	else if(rc.mymode == Button_Reset){
 			mode=4;
 	}
+	
+	
+	//每过100ms，clock_100ms就会等于50
+	static uint16_t clock_100ms = 50;
+	
+	if(!(--clock_100ms)){
+		clock_100ms = 50;
+	}
+	//
 	switch(mode){
 		case 1: throttle=1300;
 		break;
-		case 2: throttle=1000;
+		case 2: 
+			//每过100ms，throttle减10
+			if(clock_100ms == 50 && tmp_throttle >= 1100){
+					tmp_throttle = tmp_throttle - 10;
+			}
+			throttle = tmp_throttle;
 	  break;
 		case 3: throttle=1300;
 		break;
