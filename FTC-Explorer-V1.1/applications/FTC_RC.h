@@ -4,7 +4,7 @@
 #include "FTC_Config.h"
 
 #define RC_MID  			1500                     
-#define RC_MINCHECK		1250                      
+#define RC_MINCHECK		1200                      
 #define RC_MAXCHECK  	1800 
 #define RC_MINTHROTTLE 1100
 #define RC_MAXTHROTTLE 1900
@@ -16,6 +16,11 @@
 #define PITCH_LOOKUP_LENGTH 7
 #define THROTTLE_LOOKUP_LENGTH 12
 
+
+#define Normal 0
+#define Button_Fly  1
+#define Button_Land 2
+#define Button_Reset 3
 enum {
     ROLL = 0,
     PITCH,
@@ -38,7 +43,7 @@ public:
 
 	uint16_t rawData[10];
 	int16_t Command[4];
-
+  uint16_t mymode;
 	//参数初始化
 	void Init(void);
 	//遥控通道数据处理

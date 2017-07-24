@@ -72,27 +72,8 @@ void FTC_FlyControl::Attitude_Inner_Loop(void)
 	//
 	if(!ftc.f.ALTHOLD)
 		rc.Command[THROTTLE] = (rc.Command[THROTTLE] - 1000) / cosf(radians(tiltAngle)) + 1000;
-	static int flag = 0;
-	static int clock = 500;
-	static int16_t throw_throttle;
-	if(imu.Acc.z < 0.5*ACC_1G && ftc.f.ARMED&&! flag){
-			throw_throttle = 1600;
-			flag = 1;
-			clock = 200;
-	}
-	if(clock == 200 && throw_throttle > 1100){
-			throw_throttle = throw_throttle - 5;
-	}
-	if(!(clock--)){
-		clock = 200 ; 
-	}	
 	
-	//PID输出转为电机控制量
-	if(flag)
-		motor.writeMotor(throw_throttle,PIDTerm[ROLL], PIDTerm[PITCH], PIDTerm[YAW]);
-	if(!flag)
-		;//motor.writeMotor(rc.Command[THROTTLE], PIDTerm[ROLL], PIDTerm[PITCH], PIDTerm[YAW]);
-	//PID?????????
+	motor.writeMotor(rc.Command[THROTTLE], PIDTerm[ROLL], PIDTerm[PITCH], PIDTerm[YAW]);
 	//motor.writeMotor(rc.Command[THROTTLE], PIDTerm[ROLL], PIDTerm[PITCH], PIDTerm[YAW]);
 }	
 

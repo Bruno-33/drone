@@ -7,42 +7,66 @@
 
 FTC_Motor motor;
 
-void FTC_Motor::writeMotor(uint16_t throttle, int32_t pidTermRoll, int32_t pidTermPitch, int32_t pidTermYaw)
-{
-	//??X?
-	motorPWM[2] = throttle - 0.5 * pidTermRoll + 0.866 *  pidTermPitch + pidTermYaw; //??
-	motorPWM[1] = throttle - 0.5 * pidTermRoll - 0.866 *  pidTermPitch + pidTermYaw; //??
-	motorPWM[0] = throttle + 0.5 * pidTermRoll + 0.866 *  pidTermPitch - pidTermYaw; //??
-	motorPWM[3] = throttle + 0.5 * pidTermRoll - 0.866 *  pidTermPitch - pidTermYaw; //??
-	motorPWM[5] = throttle - pidTermRoll - pidTermYaw;	//?
-	motorPWM[4] = throttle + pidTermRoll + pidTermYaw;	//?
+void FTC_Motor::writeMotor(uint16_t throttle, int32_t pidTermRoll, int32_t pidTermPitch, int32_t pidTermYaw){
+	static int mode = 0;//0 遥控    1一键起飞    2 一键降落     3抛飞     4初始
+	if(rc.mymode==Normal){
+			if(imu.Acc.z > 2*ACC_1G && ftc.f.ARMED  && mode==4){
+				  mode=3;
+			}
+			else if(rc.rawData[THROTTLE] > RC_MINCHECK ){
+					mode=0;
+			}
+	}
+  else if(rc.mymode==Button_Fly){
+			if(rc.rawData[THROTTLE] < RC_MINCHECK && mode==4){
+				  mode=1;
+			}
+			else if(rc.rawData[THROTTLE] > RC_MINCHECK){
+					mode=0; 
+			}
+	}
+	else if(rc.mymode==Button_Land){
+			mode=2;
+	}
+	else{
+			mode=4;
+	}
+	switch(mode){
+		case 1: throttle=1300;
+		break;
+		case 2: throttle=1000;
+	  break;
+		case 3: throttle=1300;
+		break;
+		default: ;
+	}
+	motorPWM[2] = throttle - 0.5 * pidTermRoll + 0.866 *  pidTermPitch + pidTermYaw; 
+	motorPWM[1] = throttle - 0.5 * pidTermRoll - 0.866 *  pidTermPitch + pidTermYaw; 
+	motorPWM[0] = throttle + 0.5 * pidTermRoll + 0.866 *  pidTermPitch - pidTermYaw; 
+	motorPWM[3] = throttle + 0.5 * pidTermRoll - 0.866 *  pidTermPitch - pidTermYaw; 
+	motorPWM[5] = throttle - pidTermRoll - pidTermYaw;	
+	motorPWM[4] = throttle + pidTermRoll + pidTermYaw;	
 	
 	int16_t maxMotor = motorPWM[0];
-	for (u8 i = 1; i < MAXMOTORS; i++)
-	{
+	for (u8 i = 1; i < MAXMOTORS; i++){
 		if (motorPWM[i] > maxMotor)
 					maxMotor = motorPWM[i];				
 	}
 	
-	for (u8 i = 0; i < MAXMOTORS; i++) 
-	{
+	for (u8 i = 0; i < MAXMOTORS; i++) {
 		if (maxMotor > MAXTHROTTLE)    
 			motorPWM[i] -= maxMotor - MAXTHROTTLE;	
 		//限制电机PWM的最小和最大值
-		//motorPWM[i] = 1700 + (rc.rawData[THROTTLE]-2000)*(rc.rawData[THROTTLE]-2000)*(rc.rawData[THROTTLE]-2000)/1000000;
-		//motorPWM[i] = 0.5*rc.rawData[THROTTLE]+550;//
 		motorPWM[i] = constrain_uint16(motorPWM[i], MINTHROTTLE, MAXTHROTTLE);
 	}
 
-	//如果未解锁，则将电机输出设置为最低
+	//如果未解锁，则将电机输出设置为最低rc.rawData[THROTTLE] < RC_MINCHECK
 	if(!ftc.f.ARMED)	
 		ResetPWM();
-
-	//if(!ftc.f.ALTHOLD && rc.rawData[THROTTLE] < RC_MINCHECK)
-		//ResetPWM();
-	//写入电机PWM
+	 if(ftc.f.ARMED&&(mode==4||(mode==0&&rc.rawData[THROTTLE] < RC_MINCHECK)))
+		   ResetPWM();
+	static int16_t throw_throttle;
 	pwm.SetPwm(motorPWM);
-	
 }
 
 void FTC_Motor::getPWM(int16_t* pwm)

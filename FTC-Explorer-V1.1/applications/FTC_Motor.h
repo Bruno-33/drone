@@ -4,7 +4,7 @@
 #include "FTC_Config.h"
 
 #define MINTHROTTLE 1000
-#define MAXTHROTTLE 2500
+#define MAXTHROTTLE 1800
 
 class FTC_Motor
 {

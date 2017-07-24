@@ -148,7 +148,15 @@ void FTC_RC::check_sticks(void)
 
 void FTC_RC::CheckAUX(void)
 {
-	if(rc.rawData[AUX2]>0 && rc.rawData[AUX2]<2100)	//辅助通道1，三段开关
+	if(rc.rawData[AUX1]>1000 && rc.rawData[AUX1]<1200&&rc.rawData[AUX2]>1000 && rc.rawData[AUX2]<1200)
+			rc.mymode=Normal;
+	else if(rc.rawData[AUX1]>1200 && rc.rawData[AUX2]>1000 && rc.rawData[AUX2]<1200)
+			rc.mymode=Button_Fly;
+	else if(rc.rawData[AUX1]>1200 && rc.rawData[AUX2]>1200)
+			rc.mymode=Button_Land;
+	else
+		 rc.mymode=Button_Reset;
+	/*if(rc.rawData[AUX2]>0 && rc.rawData[AUX2]<2100)	//辅助通道1，三段开关
 	{
 		if(rc.rawData[AUX2]>0 && rc.rawData[AUX2]<1300)
 		{
@@ -160,7 +168,7 @@ void FTC_RC::CheckAUX(void)
 		{
 		}
 
-	}
+	}*/
 }
 
 /******************* (C) COPYRIGHT 2015 FTC *****END OF FILE************/
