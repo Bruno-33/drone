@@ -19,7 +19,7 @@
 
 #define Normal 0
 #define Button_Fly  1
-#define Button_Land 2
+#define Button_turn 2
 #define Button_Reset 3
 enum {
     ROLL = 0,
